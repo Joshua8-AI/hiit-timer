@@ -9,7 +9,9 @@ A zero-dependency, browser-based interval timer for HIIT (High-Intensity Interva
 - **Screen stays on** — uses the Wake Lock API so your phone won't sleep mid-burpee
 - **Accessible** — ARIA live regions, keyboard shortcuts, screen-reader friendly
 - **Mobile-first** — responsive layout, PWA-capable, works offline once loaded
-- **Tiny** — ~740 lines total of hand-written HTML/CSS/JS. No frameworks, no bundler
+- **Tiny** — ~740 lines total of hand-written* HTML/CSS/JS. No frameworks, no bundler
+
+  <sub>*mostly written by Claude. Does Claude even have hands? Unclear. The lines exist, though.</sub>
 
 ## Quick start
 
