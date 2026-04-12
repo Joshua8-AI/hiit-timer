@@ -1,0 +1,249 @@
+/* CSS Custom Properties */
+:root {
+  --color-work: #e74c3c;
+  --color-rest: #27ae60;
+  --color-idle: #3498db;
+  --color-complete: #9b59b6;
+  --color-paused: #f39c12;
+
+  --color-bg: #1a1a2e;
+  --color-surface: #16213e;
+  --color-text: #eee;
+  --color-text-muted: #aaa;
+
+  --font-size-countdown: clamp(4rem, 20vw, 10rem);
+  --font-size-phase: clamp(1.5rem, 6vw, 2.5rem);
+  --font-size-round: clamp(1rem, 4vw, 1.5rem);
+
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 2rem;
+
+  --touch-target: 48px;
+}
+
+/* CSS Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Base Layout */
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+.app {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-md);
+}
+
+/* Header */
+header {
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+/* Main Content */
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;
+  gap: var(--spacing-lg);
+}
+
+/* Configuration Section */
+.config {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+.config-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.config-field label {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.config-field input {
+  width: 80px;
+  height: var(--touch-target);
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border: 2px solid var(--color-surface);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.config-field input:focus {
+  outline: none;
+  border-color: var(--color-idle);
+}
+
+.config-field input:invalid {
+  border-color: var(--color-work);
+}
+
+/* Timer Display */
+.timer-display {
+  text-align: center;
+  padding: var(--spacing-lg);
+  border-radius: 16px;
+  background: var(--color-surface);
+  width: 100%;
+  transition: background-color 0.3s ease;
+}
+
+.timer-display.phase-work {
+  background: var(--color-work);
+}
+
+.timer-display.phase-rest {
+  background: var(--color-rest);
+}
+
+.timer-display.phase-complete {
+  background: var(--color-complete);
+}
+
+.timer-display.phase-paused {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.phase-label {
+  font-size: var(--font-size-phase);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--spacing-sm);
+}
+
+.countdown {
+  font-size: var(--font-size-countdown);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.round-counter {
+  font-size: var(--font-size-round);
+  color: var(--color-text-muted);
+  margin-top: var(--spacing-sm);
+}
+
+.timer-display.phase-work .round-counter,
+.timer-display.phase-rest .round-counter,
+.timer-display.phase-complete .round-counter {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn {
+  min-width: 100px;
+  height: var(--touch-target);
+  padding: 0 var(--spacing-lg);
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: transform 0.1s ease, opacity 0.2s ease;
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn:disabled:active {
+  transform: none;
+}
+
+.btn-primary {
+  background: var(--color-idle);
+  color: white;
+}
+
+.btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 2px solid var(--color-text-muted);
+}
+
+/* Running state - hide config */
+.app.running .config {
+  display: none;
+}
+
+/* Accessibility */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timer-display.phase-paused {
+    animation: none;
+    opacity: 0.7;
+  }
+
+  .btn:active {
+    transform: none;
+  }
+}
