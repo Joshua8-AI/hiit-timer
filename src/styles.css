@@ -10,6 +10,7 @@
   --color-surface: #16213e;
   --color-text: #eee;
   --color-text-muted: #aaa;
+  color-scheme: dark;
 
   --font-size-countdown: clamp(4rem, 20vw, 10rem);
   --font-size-phase: clamp(1.5rem, 6vw, 2.5rem);
@@ -20,6 +21,14 @@
   --spacing-lg: 2rem;
 
   --touch-target: 48px;
+}
+
+:root[data-theme="light"] {
+  --color-bg: #f0f2f5;
+  --color-surface: #ffffff;
+  --color-text: #1a1a2e;
+  --color-text-muted: #5a6270;
+  color-scheme: light;
 }
 
 /* CSS Reset */
@@ -39,14 +48,21 @@ body {
   background-color: var(--color-bg);
   color: var(--color-text);
   line-height: 1.5;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .app {
   min-height: 100%;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: var(--spacing-md);
+  /* Keep content clear of the notch and home indicator on iPhone */
+  padding: max(var(--spacing-md), env(safe-area-inset-top))
+           max(var(--spacing-md), env(safe-area-inset-right))
+           max(var(--spacing-md), env(safe-area-inset-bottom))
+           max(var(--spacing-md), env(safe-area-inset-left));
 }
 
 /* Header */
@@ -59,6 +75,36 @@ header h1 {
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--color-text-muted);
+}
+
+/* Theme Toggle */
+.theme-toggle {
+  position: fixed;
+  top: max(var(--spacing-md), env(safe-area-inset-top));
+  right: max(var(--spacing-md), env(safe-area-inset-right));
+  width: var(--touch-target);
+  height: var(--touch-target);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.theme-toggle svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Show the icon for the theme you'd switch to */
+:root:not([data-theme="light"]) .icon-moon,
+:root[data-theme="light"] .icon-sun {
+  display: none;
 }
 
 /* Main Content */
@@ -100,12 +146,14 @@ main {
   width: 80px;
   height: var(--touch-target);
   text-align: center;
+  /* >= 16px so iOS Safari doesn't zoom in when the input is focused */
   font-size: 1.25rem;
   font-weight: 600;
   border: 2px solid var(--color-surface);
   border-radius: 8px;
   background: var(--color-surface);
   color: var(--color-text);
+  touch-action: manipulation;
 }
 
 .config-field input:focus {
@@ -125,6 +173,15 @@ main {
   background: var(--color-surface);
   width: 100%;
   transition: background-color 0.3s ease;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* White text on the saturated phase colors, in both themes */
+.timer-display.phase-work,
+.timer-display.phase-rest,
+.timer-display.phase-complete {
+  color: #fff;
 }
 
 .timer-display.phase-work {
@@ -193,6 +250,16 @@ main {
   border-radius: 24px;
   cursor: pointer;
   transition: transform 0.1s ease, opacity 0.2s ease;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.btn:focus-visible,
+.theme-toggle:focus-visible,
+.config-field input:focus-visible {
+  outline: 2px solid var(--color-idle);
+  outline-offset: 2px;
 }
 
 .btn:active {

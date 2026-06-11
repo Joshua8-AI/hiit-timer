@@ -25,9 +25,13 @@ No tests, linting, or build process configured.
 
 **Source files** (`src/`):
 - `index.html` - Single-page app with ARIA accessibility attributes
-- `app.js` - Timer state machine and localStorage persistence
+- `app.js` - Timer state machine, theme toggle, and localStorage persistence
 - `audio.js` - Web Audio API tone generation (no external sound files)
-- `styles.css` - Mobile-first responsive CSS
+- `theme.js` - Pre-paint theme application (loaded in `<head>`; CSP forbids inline scripts)
+- `styles.css` - Mobile-first responsive CSS with light/dark themes via `data-theme` on `<html>`
+- `sw.js` - Service worker: precaches app shell, stale-while-revalidate fetch strategy
+- `manifest.json` - PWA manifest (standalone display, portrait)
+- `icons/` - PNG icons; regenerate with `scripts/generate-icons.py` (requires Pillow)
 
 **Timer state machine** (in `app.js`):
 ```
@@ -41,7 +45,9 @@ any state ──[reset]──► idle
 - `unlockAudio()` - Required on iOS before any sound plays (call on user gesture)
 - `playWorkSound()` / `playRestSound()` / `playCompleteSound()`
 
-**localStorage key**: `hiit-timer-config` stores `{workDuration, restDuration, rounds}`
+**localStorage keys**:
+- `hiit-timer-config` stores `{workDuration, restDuration, rounds}`
+- `hiit-timer-theme` stores `'light'` or `'dark'` (defaults to `prefers-color-scheme`)
 
 ## Deployment
 

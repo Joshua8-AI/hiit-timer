@@ -8,7 +8,8 @@ A zero-dependency, browser-based interval timer for HIIT (High-Intensity Interva
 - **Audio cues** — Web Audio API generates tones in-browser, no sound files to load
 - **Screen stays on** — uses the Wake Lock API so your phone won't sleep mid-burpee
 - **Accessible** — ARIA live regions, keyboard shortcuts, screen-reader friendly
-- **Mobile-first** — responsive layout, PWA-capable, works offline once loaded
+- **Light & dark themes** — toggle in the top-right corner, follows system preference by default
+- **Installable PWA** — on iPhone use Safari's Share → Add to Home Screen for a standalone, offline-capable app
 - **Tiny** — ~740 lines total of hand-written* HTML/CSS/JS. No frameworks, no bundler
 
   <sub>*mostly written by Claude. Does Claude even have hands? Unclear. The lines exist, though.</sub>
@@ -38,12 +39,14 @@ cd src && python3 -m http.server 8000
 
 ## Architecture
 
-Four static files in `src/`:
+Static files in `src/`:
 
 - `index.html` — single-page app with ARIA attributes
-- `app.js` — timer state machine (`idle → work ↔ rest → complete`) and `localStorage` persistence
+- `app.js` — timer state machine (`idle → work ↔ rest → complete`), theme toggle, and `localStorage` persistence
 - `audio.js` — Web Audio API tone generator with iOS unlock handling
-- `styles.css` — mobile-first responsive CSS
+- `theme.js` — applies the saved/system theme before first paint (no flash of wrong theme)
+- `styles.css` — mobile-first responsive CSS with light/dark themes
+- `sw.js` + `manifest.json` + `icons/` — PWA install and offline support
 
 Served in production by `nginxinc/nginx-unprivileged:alpine` (uid 101) with a hardened CSP and the usual security headers. Container listens on 8080, mapped to host port 80.
 

@@ -34,8 +34,37 @@ const elements = {
   timerDisplay: document.getElementById('timer-display'),
   startBtn: document.getElementById('start-btn'),
   pauseBtn: document.getElementById('pause-btn'),
-  resetBtn: document.getElementById('reset-btn')
+  resetBtn: document.getElementById('reset-btn'),
+  themeToggle: document.getElementById('theme-toggle'),
+  metaThemeColor: document.getElementById('meta-theme-color')
 };
+
+// ============================================================================
+// Theme
+// ============================================================================
+
+const THEME_STORAGE_KEY = 'hiit-timer-theme';
+const THEME_COLORS = { dark: '#1a1a2e', light: '#f0f2f5' };
+
+// theme.js (loaded in <head>) sets the initial data-theme before first paint
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  elements.metaThemeColor.content = THEME_COLORS[theme];
+  elements.themeToggle.setAttribute(
+    'aria-label',
+    theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'
+  );
+}
+
+function toggleTheme() {
+  const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, next);
+  } catch (e) {
+    console.warn('Could not save theme to localStorage:', e);
+  }
+}
 
 // ============================================================================
 // LocalStorage
@@ -99,8 +128,11 @@ function formatTime(ms) {
 }
 
 function updateDisplay() {
-  // Update countdown
-  elements.countdown.textContent = formatTime(state.timeRemaining);
+  // Update countdown (idle previews the configured work duration)
+  const displayMs = state.phase === 'idle'
+    ? state.config.workDuration * 1000
+    : state.timeRemaining;
+  elements.countdown.textContent = formatTime(displayMs);
 
   // Update round counter
   elements.roundCounter.textContent = `${state.currentRound} / ${state.config.rounds}`;
@@ -173,6 +205,7 @@ function syncConfigFromInputs() {
   // Update inputs to show validated values
   syncInputsFromConfig();
   saveConfig();
+  updateDisplay();
 }
 
 // ============================================================================
@@ -180,6 +213,10 @@ function syncConfigFromInputs() {
 // ============================================================================
 
 async function startTimer() {
+  if (state.phase === 'work' || state.phase === 'rest' || state.phase === 'paused') {
+    return; // already running
+  }
+
   if (state.phase === 'complete') {
     resetTimer();
   }
@@ -215,19 +252,21 @@ function tick() {
   state.timeRemaining = Math.max(0, initialTime - elapsed);
 
   if (state.timeRemaining <= 0) {
-    handlePhaseComplete();
+    // Carry the overshoot into the next phase so total workout time stays
+    // accurate even when rAF is throttled (backgrounded tab, low battery)
+    handlePhaseComplete(elapsed - initialTime);
   } else {
     updateDisplay();
     state.animationFrameId = requestAnimationFrame(tick);
   }
 }
 
-function handlePhaseComplete() {
+function handlePhaseComplete(overshootMs = 0) {
   if (state.phase === 'work') {
     // Work complete, start rest
     state.phase = 'rest';
     state.timeRemaining = state.config.restDuration * 1000;
-    state.startTimestamp = performance.now();
+    state.startTimestamp = performance.now() - overshootMs;
     playRestSound();
   } else if (state.phase === 'rest') {
     // Rest complete
@@ -242,7 +281,7 @@ function handlePhaseComplete() {
       state.currentRound++;
       state.phase = 'work';
       state.timeRemaining = state.config.workDuration * 1000;
-      state.startTimestamp = performance.now();
+      state.startTimestamp = performance.now() - overshootMs;
       playWorkSound();
     }
   }
@@ -308,6 +347,11 @@ async function requestWakeLock() {
   if ('wakeLock' in navigator) {
     try {
       wakeLock = await navigator.wakeLock.request('screen');
+      // The browser releases the lock when the page is hidden; clear our
+      // reference so the visibilitychange handler knows to re-request it
+      wakeLock.addEventListener('release', () => {
+        wakeLock = null;
+      });
     } catch (e) {
       console.warn('Wake Lock not available:', e);
     }
@@ -328,6 +372,9 @@ function releaseWakeLock() {
 function handleKeydown(e) {
   if (e.target.tagName === 'INPUT') {
     return; // Don't intercept when typing in inputs
+  }
+  if (e.target.tagName === 'BUTTON' && e.code === 'Space') {
+    return; // Let a focused button handle Space natively (avoids double-toggle)
   }
 
   switch (e.code) {
@@ -353,8 +400,12 @@ function handleKeydown(e) {
 function init() {
   loadConfig();
   syncInputsFromConfig();
+  applyTheme(document.documentElement.dataset.theme || 'dark');
   updateDisplay();
   updateButtons();
+
+  // Theme toggle
+  elements.themeToggle.addEventListener('click', toggleTheme);
 
   // Config inputs
   elements.workInput.addEventListener('change', syncConfigFromInputs);
@@ -377,6 +428,13 @@ function init() {
       }
     }
   });
+
+  // PWA: cache the app shell for offline use
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch((e) => {
+      console.warn('Service worker registration failed:', e);
+    });
+  }
 }
 
 init();

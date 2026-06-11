@@ -2,18 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="description" content="HIIT Workout Timer - Customizable interval timer for high-intensity workouts">
-  <meta name="theme-color" content="#1a1a2e">
+  <meta name="theme-color" id="meta-theme-color" content="#1a1a2e">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>HIIT Timer</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <script src="theme.js"></script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="app" role="application" aria-label="HIIT Workout Timer">
+  <div class="app" aria-label="HIIT Workout Timer">
     <header>
       <h1>HIIT Timer</h1>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Switch theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
     </header>
 
     <main>
@@ -21,23 +35,23 @@
       <section class="config" id="config-section" aria-label="Workout Configuration">
         <div class="config-field">
           <label for="work-duration">Work (seconds)</label>
-          <input type="number" id="work-duration" min="1" max="600" value="30" aria-describedby="work-hint">
+          <input type="number" id="work-duration" inputmode="numeric" enterkeyhint="done" min="1" max="600" value="30" aria-describedby="work-hint">
           <span id="work-hint" class="visually-hidden">Enter work interval duration between 1 and 600 seconds</span>
         </div>
         <div class="config-field">
           <label for="rest-duration">Rest (seconds)</label>
-          <input type="number" id="rest-duration" min="1" max="600" value="10" aria-describedby="rest-hint">
+          <input type="number" id="rest-duration" inputmode="numeric" enterkeyhint="done" min="1" max="600" value="10" aria-describedby="rest-hint">
           <span id="rest-hint" class="visually-hidden">Enter rest interval duration between 1 and 600 seconds</span>
         </div>
         <div class="config-field">
           <label for="rounds">Rounds</label>
-          <input type="number" id="rounds" min="1" max="99" value="8" aria-describedby="rounds-hint">
+          <input type="number" id="rounds" inputmode="numeric" enterkeyhint="done" min="1" max="99" value="8" aria-describedby="rounds-hint">
           <span id="rounds-hint" class="visually-hidden">Enter number of rounds between 1 and 99</span>
         </div>
       </section>
 
       <!-- Timer Display -->
-      <section class="timer-display" id="timer-display" aria-label="Timer Display" aria-live="polite">
+      <section class="timer-display" id="timer-display" aria-label="Timer Display">
         <div class="phase-label" id="phase-label" role="status">READY</div>
         <div class="countdown" id="countdown" aria-label="Time remaining">0:00</div>
         <div class="round-counter" id="round-counter" aria-label="Current round">0 / 8</div>
@@ -45,9 +59,9 @@
 
       <!-- Controls -->
       <section class="controls" aria-label="Timer Controls">
-        <button id="start-btn" class="btn btn-primary" aria-label="Start workout">Start</button>
-        <button id="pause-btn" class="btn btn-secondary" disabled aria-label="Pause workout">Pause</button>
-        <button id="reset-btn" class="btn btn-secondary" disabled aria-label="Reset workout">Reset</button>
+        <button id="start-btn" class="btn btn-primary">Start</button>
+        <button id="pause-btn" class="btn btn-secondary" disabled>Pause</button>
+        <button id="reset-btn" class="btn btn-secondary" disabled>Reset</button>
       </section>
     </main>
   </div>

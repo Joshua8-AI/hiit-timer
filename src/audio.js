@@ -34,7 +34,6 @@ async function unlockAudio() {
     oscillator.stop(ctx.currentTime + 0.001);
 
     audioUnlocked = true;
-    console.log('Audio unlocked successfully');
     return true;
   } catch (e) {
     console.warn('Failed to unlock audio:', e);
@@ -42,7 +41,9 @@ async function unlockAudio() {
   }
 }
 
-function playTone(frequency, duration, type = 'sine') {
+// Schedules a tone `delay` seconds from now on the AudioContext clock,
+// which stays accurate even when the browser throttles JS timers
+function playTone(frequency, duration, delay = 0) {
   try {
     const ctx = getAudioContext();
 
@@ -51,39 +52,33 @@ function playTone(frequency, duration, type = 'sine') {
       ctx.resume();
     }
 
+    const startTime = ctx.currentTime + delay;
     const oscillator = ctx.createOscillator();
     const gainNode = ctx.createGain();
 
-    oscillator.type = type;
-    oscillator.frequency.setValueAtTime(frequency, ctx.currentTime);
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(frequency, startTime);
 
     // Envelope: quick attack, hold, quick release
-    gainNode.gain.setValueAtTime(0, ctx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.01);
-    gainNode.gain.setValueAtTime(0.3, ctx.currentTime + duration - 0.05);
-    gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
+    gainNode.gain.setValueAtTime(0, startTime);
+    gainNode.gain.linearRampToValueAtTime(0.3, startTime + 0.01);
+    gainNode.gain.setValueAtTime(0.3, startTime + duration - 0.05);
+    gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
 
     oscillator.connect(gainNode);
     gainNode.connect(ctx.destination);
 
-    oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + duration);
+    oscillator.start(startTime);
+    oscillator.stop(startTime + duration);
   } catch (e) {
     console.warn('Audio playback failed:', e);
   }
 }
 
-function playBeeps(frequency, count, beepDuration, gap) {
-  for (let i = 0; i < count; i++) {
-    setTimeout(() => {
-      playTone(frequency, beepDuration);
-    }, i * (beepDuration * 1000 + gap));
-  }
-}
-
 // Work phase start: High pitched double beep
 function playWorkSound() {
-  playBeeps(880, 2, 0.1, 100); // A5, 2 beeps
+  playTone(880, 0.1); // A5
+  playTone(880, 0.1, 0.2);
 }
 
 // Rest phase start: Lower pitched single beep
@@ -95,9 +90,7 @@ function playRestSound() {
 function playCompleteSound() {
   const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
   notes.forEach((freq, i) => {
-    setTimeout(() => {
-      playTone(freq, 0.2);
-    }, i * 150);
+    playTone(freq, 0.2, i * 0.15);
   });
 }
 
