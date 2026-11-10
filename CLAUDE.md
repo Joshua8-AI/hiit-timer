@@ -51,8 +51,15 @@ any state ──[reset]──► idle
 
 ## Deployment
 
-- Docker image: `nginxinc/nginx-unprivileged:alpine` (runs as uid 101)
+- Docker image: `nginxinc/nginx-unprivileged:alpine-slim` (runs as uid 101) plus `apk upgrade`;
+  the slim base has no curl or optional nginx modules, which is where most image CVEs came from
+- `docker compose build` always pulls the current base. Rebuild periodically to pick up
+  security fixes; check with `trivy image hiit-hiit-timer:latest`
 - Container listens on 8080, mapped to host port 80
+- Hardened runtime: read-only root filesystem (`/tmp` is a tmpfs, the only writable path),
+  all capabilities dropped, `no-new-privileges`, 64-process limit. Web root and nginx config
+  are root-owned, so the nginx user cannot modify them
+- nginx answers only GET/HEAD (405 otherwise) and returns 404 for dotfiles
 - Resource limits: 1 CPU / 512MB memory; reservations: 0.25 CPU / 64MB
 
 **nginx configuration** (two files):

@@ -3,7 +3,7 @@
 // background refresh (stale-while-revalidate). The origin sends
 // Cache-Control: no-cache, so the background fetch picks up new deploys.
 
-const CACHE_NAME = 'hiit-timer-v1';
+const CACHE_NAME = 'hiit-timer-v2';
 
 const ASSETS = [
   './',
@@ -17,6 +17,10 @@ const ASSETS = [
   './icons/icon-512.png',
   './icons/apple-touch-icon.png'
 ];
+
+const SHELL_PATHS = new Set(
+  ASSETS.map((asset) => new URL(asset, self.location).pathname)
+);
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -41,12 +45,18 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Only the app shell is cached. Without this, every distinct URL (e.g. a
+  // link with a random query string) would add a permanent cache entry.
+  if (!SHELL_PATHS.has(url.pathname)) {
+    return;
+  }
+
   event.respondWith(
     caches.open(CACHE_NAME).then(async (cache) => {
-      const cached = await cache.match(event.request);
+      const cached = await cache.match(event.request, { ignoreSearch: true });
       const refresh = fetch(event.request)
         .then((response) => {
-          if (response.ok) {
+          if (response.ok && !url.search) {
             cache.put(event.request, response.clone());
           }
           return response;
